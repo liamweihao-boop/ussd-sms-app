@@ -32,7 +32,7 @@ app.post('/ussd', async (req, res) => {
 
     // First screen
     res.type('text/plain');
-    res.send("CON Thanks! We will send you the website link via SMS.");
+    res.send("CON Thanks! We will nooooooooooo.");
   } else {
     // End the USSD session
     res.type('text/plain');
