@@ -14,29 +14,46 @@ const africastalking = require('africastalking')({
 });
 const sms = africastalking.SMS;
 
-// Health check route (optional)
-app.get('/', (_req, res) => res.send('USSD Server is running'));
+// Health check
+app.get('/', (_req, res) => res.send('FredTiger USSD Server is running'));
 
 // USSD endpoint
 app.post('/ussd', async (req, res) => {
   const { phoneNumber, text } = req.body;
 
+  // USSD menu navigation
   if (!text || text.trim() === '') {
-    // Send the SMS with the link
-    sms.send({
-      to: [phoneNumber],
-      message: `Here’s your link: ${process.env.WEBSITE_URL}`,
-    }).catch(err => {
-      console.error('SMS error:', err);
-    });
-
     // First screen
     res.type('text/plain');
-    res.send("CON Thanks! We will nooooooooooo.");
-  } else {
-    // End the USSD session
+    res.send(
+      "CON Welcome to FredTiger Services\n" +
+      "1. Accept\n" +
+      "2. Exit"
+    );
+  } else if (text === '1') {
+    // User accepted → Send SMS
+    try {
+      await sms.send({
+        to: [phoneNumber],
+        message: `Hello from FredTiger! 🎉\nHere’s your access link: ${process.env.WEBSITE_URL}\n\nInstructions:\nClick the link to visit our platform.\nPlease keep this link safe and do not share it.`,
+        // If you have a sender ID approved by Africa's Talking, you can set it:
+        // from: 'FredTiger'
+      });
+    } catch (err) {
+      console.error('SMS error:', err);
+    }
+
+    // Congratulations message
     res.type('text/plain');
-    res.send("END Check your SMS for the link. Goodbye!");
+    res.send("END 🎉 Congratulations! You have received your link via SMS.");
+  } else if (text === '2') {
+    // User declined
+    res.type('text/plain');
+    res.send("END You have declined. No link will be sent. Goodbye!");
+  } else {
+    // Invalid input
+    res.type('text/plain');
+    res.send("CON Invalid choice. Please try again:\n1. Accept\n2. Exit");
   }
 });
 
